@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EC Database 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1F3B57;
+    --navy-edge: #132A40;
+    --navy-tint: #E3EBF3;
+    --navy-tint-border: #B9CBDD;
+    --gold: #B08333;
+    --gold-edge: #8A6322;
+    --gold-light: #E6D9BE;
+    --bg: #FAF8F4;
+    --surface: #FFFFFF;
+    --border: #E5E0D4;
+    --text: #22303C;
+    --muted: #6E7A86;
+    --faint: #A3ACB5;
+    --lock: #E6E3DC;
+    --lock-edge: #CCC8BE;
+    --btn-ink: #FFFFFF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --navy: #2B4F73;
+      --navy-edge: #1A334D;
+      --navy-tint: #1C2B3A;
+      --navy-tint-border: #355472;
+      --bg: #0F1720;
+      --surface: #16212C;
+      --border: #263444;
+      --text: #E8ECF0;
+      --muted: #9AA7B4;
+      --faint: #5F6E7C;
+      --lock: #223040;
+      --lock-edge: #1A2634;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+    font-weight: 700;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  button, a { font: inherit; color: inherit; }
+  a { text-decoration: none; }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 12px; }
+
+  /* ---------- layout ---------- */
+  .app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .side { display: none; }
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    display: flex; justify-content: space-around;
+    background: var(--surface);
+    border-top: 2px solid var(--border);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 6px 2px; background: none; border: 2px solid transparent; border-radius: 14px;
+    font-size: 9.5px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; text-align: center; line-height: 1.15;
+    color: var(--muted); cursor: pointer;
+  }
+  .tab .ic { font-size: 22px; line-height: 1.1; }
+  .tab.active { background: var(--navy-tint); border-color: var(--navy-tint-border); color: var(--navy); }
+  @media (prefers-color-scheme: dark) { .tab.active { color: #BFD4EA; } }
+  .main { padding: 14px 16px 120px; min-width: 0; }
+  .rail { padding: 0 16px 120px; display: grid; gap: 16px; }
+
+  @media (min-width: 820px) {
+    .app { grid-template-columns: 250px minmax(0, 1fr); }
+    .side {
+      display: flex; flex-direction: column; gap: 6px;
+      position: sticky; top: 0; height: 100vh;
+      padding: 22px 14px; border-right: 2px solid var(--border);
+    }
+    .tabbar { display: none; }
+    .main { padding: 18px 28px 60px; }
+    .rail { grid-column: 2; padding: 0 28px 60px; }
+  }
+  @media (min-width: 1180px) {
+    .app { grid-template-columns: 250px minmax(0, 1fr) 340px; }
+    .rail { grid-column: 3; padding: 18px 24px 60px 0; position: sticky; top: 0; align-self: start; }
+    .main { padding-right: 24px; }
+  }
+
+  /* ---------- sidebar ---------- */
+  .logo { padding: 4px 12px 18px; }
+  .logo .kick { font-size: 10.5px; letter-spacing: .14em; color: var(--gold); font-weight: 900; }
+  .logo .word { font-size: 28px; font-weight: 900; color: var(--navy); letter-spacing: -.01em; line-height: 1.1; }
+  @media (prefers-color-scheme: dark) { .logo .word { color: #DCE7F2; } }
+  .nav {
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 14px; border: 2px solid transparent; border-radius: 14px;
+    font-size: 15px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); background: none; cursor: pointer; text-align: left; width: 100%;
+  }
+  .nav .ic { width: 34px; text-align: center; font-size: 26px; line-height: 1; }
+  .nav:hover { background: var(--navy-tint); }
+  .nav.active { background: var(--navy-tint); border-color: var(--navy-tint-border); color: var(--navy); }
+  @media (prefers-color-scheme: dark) { .nav.active { color: #BFD4EA; } }
+  .nav .ext { margin-left: auto; font-size: 14px; color: var(--faint); }
+  .side-foot { margin-top: auto; padding: 12px; font-size: 12px; color: var(--faint); line-height: 1.5; font-weight: 700; }
+
+  /* ---------- unit banner ---------- */
+  .unit {
+    display: flex; align-items: center; gap: 14px; justify-content: space-between;
+    background: var(--navy); color: #fff;
+    border-radius: 18px; border-bottom: 5px solid var(--navy-edge);
+    padding: 16px 18px;
+  }
+  .unit-l { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .back {
+    flex: none; width: 36px; height: 36px; display: grid; place-items: center;
+    border: 0; border-radius: 12px; background: rgba(255,255,255,.14); color: #fff;
+    font-size: 20px; cursor: pointer; font-weight: 900;
+  }
+  .back:hover { background: rgba(255,255,255,.24); }
+  .back[hidden] { display: none; }
+  .unit .kick { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: #E6C98A; font-weight: 900; }
+  .unit h1 { margin: 2px 0 0; font-size: clamp(20px, 4.6vw, 26px); font-weight: 900; line-height: 1.15; }
+  .gbtn {
+    flex: none; display: inline-flex; align-items: center; gap: 9px;
+    padding: 11px 16px; border-radius: 14px; border: 2px solid rgba(255,255,255,.3);
+    border-bottom-width: 4px; background: rgba(255,255,255,.08); color: #fff;
+    font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 900;
+  }
+  .gbtn:hover { background: rgba(255,255,255,.16); }
+  .gbtn:active { transform: translateY(2px); border-bottom-width: 2px; }
+  @media (max-width: 520px) { .gbtn .t { display: none; } .gbtn { padding: 10px 12px; } }
+
+  /* ---------- path ---------- */
+  .hint {
+    display: flex; align-items: center; gap: 14px; margin: 26px 0 6px;
+    color: var(--faint); font-size: 14px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .hint::before, .hint::after { content: ""; flex: 1; height: 2px; background: var(--border); }
+
+  .path { list-style: none; margin: 0; padding: 0; max-width: 620px; margin-inline: auto; }
+  .step { display: flex; align-items: center; gap: 6px; padding: 14px 0; animation: rise .28s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .gutter { flex: none; width: 140px; height: 96px; display: grid; place-items: center; position: relative; }
+  .node {
+    position: relative; width: 76px; height: 70px;
+    display: grid; place-items: center;
+    border: 0; border-radius: 50%; cursor: pointer;
+    background: var(--navy); color: #fff; font-size: 30px;
+    box-shadow: 0 6px 0 var(--navy-edge);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .node { transform: translateX(calc(var(--o, 0) * 1px * var(--k, 1))); }
+  .node:hover { filter: brightness(1.08); }
+  .node:active { transform: translateX(calc(var(--o, 0) * 1px * var(--k, 1))) translateY(5px); box-shadow: 0 1px 0 var(--navy-edge); }
+  .node.done { background: var(--gold); box-shadow: 0 6px 0 var(--gold-edge); }
+  .node.done:active { box-shadow: 0 1px 0 var(--gold-edge); }
+  .node.lock { background: var(--lock); box-shadow: 0 6px 0 var(--lock-edge); cursor: default; filter: grayscale(1); opacity: .9; }
+  .node.lock:active { transform: translateX(calc(var(--o, 0) * 1px * var(--k, 1))); box-shadow: 0 6px 0 var(--lock-edge); }
+  .node .ring {
+    position: absolute; inset: -9px -9px -9px -9px; border-radius: 50%;
+    border: 4px solid var(--navy-tint-border); pointer-events: none;
+  }
+  .start {
+    position: absolute; top: -20px; left: 50%; transform: translateX(calc(-50% + var(--o, 0) * 1px * var(--k, 1)));
+    background: var(--surface); color: var(--navy); border: 2px solid var(--border); border-bottom-width: 4px;
+    border-radius: 12px; padding: 4px 12px; font-size: 14px; font-weight: 900; letter-spacing: .06em;
+    animation: bob 1.4s ease-in-out infinite;
+  }
+  .start::after {
+    content: ""; position: absolute; left: 50%; bottom: -8px; width: 12px; height: 12px;
+    background: var(--surface); border-right: 2px solid var(--border); border-bottom: 2px solid var(--border);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  @media (prefers-color-scheme: dark) { .start { color: #BFD4EA; } }
+  @keyframes bob { 0%,100% { margin-top: 0; } 50% { margin-top: -4px; } }
+
+  .label {
+    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--surface); border: 2px solid var(--border); border-bottom-width: 4px; border-radius: 16px;
+    padding: 12px 16px; cursor: pointer; text-align: left;
+    transition: transform .1s ease, border-bottom-width .1s ease;
+  }
+  .label:hover { background: var(--navy-tint); }
+  .label:active { transform: translateY(2px); border-bottom-width: 2px; }
+  .label.lock { cursor: default; background: transparent; }
+  .label.lock:hover { background: transparent; }
+  .label.lock:active { transform: none; border-bottom-width: 4px; }
+  .label .name { font-size: 17.5px; font-weight: 900; line-height: 1.25; color: var(--text); }
+  .label.lock .name { color: var(--muted); }
+  .label .meta { margin-top: 3px; font-size: 11.5px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); }
+  .label .go { flex: none; font-size: 18px; color: var(--faint); font-weight: 900; }
+  .tagdone { color: var(--gold); }
+
+  @media (max-width: 520px) {
+    .path { --k: .45; }
+    .gutter { width: 108px; }
+    .label .name { font-size: 16px; }
+  }
+
+  /* ---------- rail cards ---------- */
+  .card { background: var(--surface); border: 2px solid var(--border); border-radius: 20px; padding: 18px; }
+  .card .k { font-size: 12.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); font-weight: 900; }
+  .card h2 { margin: 6px 0 6px; font-size: 19px; font-weight: 900; line-height: 1.25; }
+  .card p { margin: 0 0 14px; color: var(--muted); font-size: 15px; line-height: 1.45; font-weight: 700; }
+  .pill {
+    display: inline-block; background: var(--gold); color: #fff; font-weight: 900; font-size: 11.5px;
+    letter-spacing: .08em; padding: 3px 10px; border-radius: 8px; margin-bottom: 8px; font-style: italic;
+  }
+  .btn {
+    display: block; width: 100%; text-align: center; cursor: pointer; border: 0;
+    padding: 14px 16px; border-radius: 16px; font-size: 15px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--gold); color: #fff; border-bottom: 4px solid var(--gold-edge);
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn:active { transform: translateY(4px); border-bottom-width: 0; }
+  .btn.ghost { background: var(--surface); color: var(--navy); border: 2px solid var(--border); border-bottom: 4px solid var(--border); }
+  @media (prefers-color-scheme: dark) { .btn.ghost { color: #BFD4EA; } }
+  .btn.ghost:active { border-bottom-width: 2px; transform: translateY(2px); }
+  .btns { display: grid; gap: 10px; }
+  .prog-num { font-size: 30px; font-weight: 900; color: var(--navy); line-height: 1.1; }
+  @media (prefers-color-scheme: dark) { .prog-num { color: #DCE7F2; } }
+  .prog-num small { font-size: 15px; color: var(--muted); font-weight: 800; }
+  .bar { height: 16px; background: var(--lock); border-radius: 999px; margin: 10px 0 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--gold); border-radius: 999px; transition: width .4s ease; min-width: 0; }
+  .note { font-size: 12.5px; color: var(--faint); font-weight: 700; }
+  .quest { display: flex; gap: 14px; align-items: center; }
+  .quest .em { font-size: 34px; }
+  .quest b { display: block; font-size: 16px; font-weight: 900; }
+  .quest span { font-size: 14px; color: var(--muted); font-weight: 700; line-height: 1.4; }
+  .foot { text-align: center; color: var(--faint); font-size: 12.5px; line-height: 1.6; padding: 4px 8px 0; font-weight: 700; }
+  .foot em { font-style: italic; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Sections"></aside>
+
+  <main class="main">
+    <header class="unit">
+      <div class="unit-l">
+        <button class="back" id="back" aria-label="Go back" hidden>&larr;</button>
+        <div>
+          <div class="kick" id="kick"></div>
+          <h1 id="title"></h1>
+        </div>
+      </div>
+</header>
+    <div class="hint" id="hint"></div>
+    <ol class="path" id="path"></ol>
+  </main>
+
+  <aside class="rail" aria-label="Info">
+    <section class="card">
+      <span class="pill">REPORT CARD</span>
+      <h2>Your progress report is ready.</h2>
+      <p>See your pre-test vs post-test results, your strengths, and what to work on next.</p>
+      <a class="btn" id="rcBtn" href="#" target="_blank" rel="noopener noreferrer">Open report card</a>
+    </section>
+    <section class="card">
+      <div class="k">Your progress</div>
+      <div class="prog-num"><span id="pn">0</span> <small>/ <span id="pt">0</span> resources opened</small></div>
+      <div class="bar"><i id="pb" style="width:0%"></i></div>
+      <div class="note">Saved on this device only.</div>
+    </section>
+    <section class="card">
+      <div class="k">Keep practicing</div>
+      <h2>Still want more practice?</h2>
+      <p>Revisit the review sets or try the full TEFL-style simulation again.</p>
+      <div class="btns">
+        <button class="btn ghost" id="goReview" type="button">Review materials</button>
+        <button class="btn ghost" id="goSim" type="button">Full simulation</button>
+      </div>
+    </section>
+    <div class="foot">KESMA CSSMORA ITS<br><em>Learn Smart, Practice Sharp, Pass Strong.</em></div>
+  </aside>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>
+
+<script>
+// =====================================================================
+// DATA — add/replace links by editing "url" below.
+// type: "branch" = leads to more items
+//       "leaf"   = clicking opens "url" (leave url as null for items
+//                  not ready yet — they render as "Soon")
+// =====================================================================
+const DATA = {
+  label: "EC Database 2026",
+  type: "branch",
+  children: [
+    {
+      label: "Material",
+      type: "branch",
+      icon: "\u{1F4DA}",
+      children: [
+        {
+          label: "In class material",
+          type: "branch",
+          icon: "\u{1F3EB}",
+          children: [
+            { label: "1. About the Program", type: "leaf", url: "https://drive.google.com/file/d/1kN2NdbV7Slry85dUo8NlICshywdfKhw6/view?usp=drive_link" },
+            { label: "2. Introduction to TEFL", type: "leaf", url: "https://drive.google.com/file/d/1GFJ1B5bSDOMXlxxGQSAjD1SmU2S0jHHe/view?usp=sharing" },
+            { label: "3. Listening", type: "leaf", url: "https://drive.google.com/file/d/19-okpjuv2rnidMGuZGnqx7cLicKVZhvD/view?usp=drive_link" },
+            { label: "4. Structure", type: "leaf", url: "https://drive.google.com/file/d/1yFNBujzlHWMe-f9Y9JeeDVaM1jartBsb/view?usp=drive_link" },
+            { label: "5. Reading", type: "leaf", url: "https://drive.google.com/file/d/193jqoMENmlxsEJ_Tvvr05ehAk68NGYew/view?usp=drive_link" },
+            { label: "6. Review", type: "leaf", url: "https://drive.google.com/drive/folders/1-4tqqmOUu2kygYh37qXSnMBaM1Myhnle?usp=drive_link" }
+          ]
+        },
+        { label: "Other books", type: "leaf", url: "https://drive.google.com/drive/u/0/folders/1dkQNROh7z9IITOc0I3xUsv8tb4Kg6rco" }
+      ]
+    },
+    {
+      label: "Class Exercise",
+      type: "branch",
+      icon: "\u270F\uFE0F",
+      children: [
+        {
+          label: "Beginner", type: "branch", icon: "\u{1F331}",
+          children: [
+            { label: "1. Listening", type: "leaf", url: "https://its.id/m/day2-azhar" },
+            { label: "2. Structure", type: "leaf", url: "https://forms.gle/1PrkBPdLQjLMfW1JA" },
+            { label: "3. Reading", type: "leaf", url: "https://forms.gle/UazAYgsJjNXAPRCq6" },
+            { label: "4. Review All", type: "leaf", url: "https://forms.gle/w27y8L4qFTi1X8Fj9" }
+          ]
+        },
+        {
+          label: "Intermediate", type: "branch", icon: "\u{1F333}",
+          children: [
+            { label: "1. Listening", type: "leaf", url: "https://its.id/m/day2-lilis" },
+            { label: "2. Structure", type: "leaf", url: "https://forms.gle/dxxavB5Qvymay5Sv8" },
+            { label: "3. Reading", type: "leaf", url: "https://forms.gle/jTanu48zhmpgz6TY9" },
+            { label: "4. Review All", type: "leaf", url: "https://forms.gle/cWpHytyv69uBCyyg9" }
+          ]
+        },
+        {
+          label: "Advanced", type: "branch", icon: "\u{1F3C6}",
+          children: [
+            { label: "1. Listening", type: "leaf", url: "https://its.id/m/day2-barrul" },
+            { label: "2. Structure", type: "leaf", url: "https://forms.gle/uq7g45WgxZiHdKmj9" },
+            { label: "3. Reading", type: "leaf", url: "https://forms.gle/aJyVNb7oZ3Ry7ZcB6" },
+            { label: "4. Review All", type: "leaf", url: "https://forms.gle/uYna1TBL2x2a7FKp7" }
+          ]
+        }
+      ]
+    },
+    {
+      label: "Simulation",
+      type: "branch",
+      icon: "\u{1F3AF}",
+      children: [
+        { label: "from Pre test", type: "leaf", url: "https://script.google.com/macros/s/AKfycbyOjCwHCyMhitigL97_SrMNBypobs3FsEyzeFznbR7KAxfJWlpPLCTW1VMyEhLxckc/exec" },
+        { label: "from Post test", type: "leaf", url: "https://its.id/m/EC26posttest" },
+        {
+          label: "Full Simulation", type: "branch", icon: "\u23F1\uFE0F",
+          children: [
+            { label: "1. Listening", type: "leaf", url: "https://forms.office.com/Pages/ResponsePage.aspx?id=rGlRHcvHdUKXZL-MnDZKTIVEcz8pfthDhENI4yiIEh1UN0NFU1k0OEpFWEVIRUFCTExVVjdQSTU0WC4u" },
+            { label: "2. Structure", type: "leaf", url: "https://forms.office.com/Pages/ResponsePage.aspx?id=rGlRHcvHdUKXZL-MnDZKTIVEcz8pfthDhENI4yiIEh1UNlFEMDRNQjk4T0JRWFdaSlAyTVlLOVpJUC4u" },
+            { label: "3. Reading", type: "leaf", url: "https://forms.office.com/Pages/ResponsePage.aspx?id=rGlRHcvHdUKXZL-MnDZKTIVEcz8pfthDhENI4yiIEh1UODQ2MjdFNDA5QUFZUDBQQVRHMFMySVlHWS4u" }
+          ]
+        }
+      ]
+    },
+    {
+      label: "Report Card",
+      type: "leaf",
+      icon: "\u{1F4CA}",
+      url: "https://drive.google.com/drive/folders/1ysGbc6zHlpmnHEKdpcxUl4RDhPtfnHIR?usp=drive_link"
+    }
+  ]
+};
+
+
+function resourceMeta(url) {
+  if (!url) return { label: 'Coming soon', icon: '\u{1F512}' };
+  if (url.indexOf('drive.google.com') !== -1) {
+    if (url.indexOf('/folders/') !== -1) return { label: 'Drive folder', icon: '\u{1F4C1}' };
+    return { label: 'Drive file', icon: '\u{1F4C4}' };
+  }
+  if (url.indexOf('forms.gle') !== -1 || url.indexOf('docs.google.com/forms') !== -1) return { label: 'Google Form', icon: '\u{1F4DD}' };
+  if (url.indexOf('forms.office.com') !== -1) return { label: 'Microsoft Form', icon: '\u{1F4DD}' };
+  if (url.indexOf('script.google.com') !== -1) return { label: 'Web app', icon: '⚙️' };
+  if (url.indexOf('its.id') !== -1) return { label: 'ITS link', icon: '\u{1F517}' };
+  return { label: 'Link', icon: '↗' };
+}
+
+// ---------- progress (stored on this device only) ----------
+const KEY = 'ec26-opened';
+let opened = new Set();
+try { opened = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch (e) {}
+function markOpened(url) {
+  opened.add(url);
+  try { localStorage.setItem(KEY, JSON.stringify([...opened])); } catch (e) {}
+}
+function allUrls(node, acc) {
+  (node.children || []).forEach(c => { if (c.type === 'leaf') { if (c.url) acc.add(c.url); } else allUrls(c, acc); });
+  return acc;
+}
+const ALL = allUrls(DATA, new Set());
+
+// ---------- navigation state ----------
+let path = [];
+function nodeAt(p) { let n = DATA; for (const i of p) n = n.children[i]; return n; }
+function readHash() {
+  const m = location.hash.match(/^#\/(\d+(?:\/\d+)*)$/);
+  if (!m) return [];
+  const p = m[1].split('/').map(Number);
+  try { const n = nodeAt(p); return n && n.type === 'branch' ? p : []; } catch (e) { return []; }
+}
+function go(p) {
+  path = p;
+  try { history.replaceState(null, '', p.length ? '#/' + p.join('/') : location.pathname + location.search); } catch (e) {}
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const OFFSETS = [0, 22, 34, 22, 0, -22, -34, -22];
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function renderNav() {
+  const side = document.getElementById('side');
+  const tabs = document.getElementById('tabbar');
+  side.innerHTML = ''; tabs.innerHTML = '';
+  const logo = el('div', 'logo');
+  logo.appendChild(el('div', 'kick', 'CSS ENGLISH CLINIC 2026'));
+  logo.appendChild(el('div', 'word', 'EC Database'));
+  side.appendChild(logo);
+
+  const items = [{ label: 'Home', icon: '\u{1F3E0}', idx: -1 }]
+    .concat(DATA.children.map((c, i) => ({ label: c.label, icon: c.icon || '\u{1F4C2}', idx: i, leaf: c.type === 'leaf' && c.url, url: c.url })));
+
+  items.forEach(it => {
+    const active = it.idx === -1 ? path.length === 0 : path[0] === it.idx;
+    [['nav', side], ['tab', tabs]].forEach(([cls, host]) => {
+      const b = it.leaf ? el('a', cls) : el('button', cls);
+      if (active) b.classList.add('active');
+      b.appendChild(el('span', 'ic', it.icon));
+      b.appendChild(el('span', 'tx', cls === 'tab' && it.label.length > 10 ? it.label.replace(' ', ' ') : it.label));
+      if (it.leaf) {
+        b.href = it.url; b.target = '_blank'; b.rel = 'noopener noreferrer';
+        if (cls === 'nav') b.appendChild(el('span', 'ext', '↗'));
+        b.addEventListener('click', () => { markOpened(it.url); renderProgress(); });
+      } else {
+        b.type = 'button';
+        b.addEventListener('click', () => go(it.idx === -1 ? [] : [it.idx]));
+      }
+      host.appendChild(b);
+    });
+  });
+  side.appendChild(el('div', 'side-foot', 'KESMA CSSMORA ITS'));
+}
+
+function renderProgress() {
+  let n = 0; ALL.forEach(u => { if (opened.has(u)) n++; });
+  document.getElementById('pn').textContent = n;
+  document.getElementById('pt').textContent = ALL.size;
+  document.getElementById('pb').style.width = (ALL.size ? Math.round(n / ALL.size * 100) : 0) + '%';
+}
+
+function render() {
+  const node = nodeAt(path);
+  // banner
+  const kick = path.length === 0 ? 'CSS English Clinic 2026'
+    : ['Section ' + (path[0] + 1)].concat((() => { const l = []; let n = DATA; path.slice(0, -1).forEach(i => { n = n.children[i]; l.push(n.label); }); return l; })()).join(' · ');
+  document.getElementById('kick').textContent = kick;
+  document.getElementById('title').textContent = path.length === 0 ? 'Pick your section' : node.label;
+  document.getElementById('back').hidden = path.length === 0;
+  document.getElementById('hint').textContent = path.length === 0 ? 'Where to?' : node.label;
+  document.title = (path.length ? node.label + ' · ' : '') + 'EC Database 2026';
+
+  // path
+  const list = document.getElementById('path');
+  list.innerHTML = '';
+  let startShown = false;
+  const allLeaves = node.children.every(c => c.type === 'leaf');
+  node.children.forEach((child, i) => {
+    const isLeaf = child.type === 'leaf';
+    const avail = !isLeaf || !!child.url;
+    const done = isLeaf && avail && opened.has(child.url);
+    const tag = isLeaf ? resourceMeta(child.url) : null;
+
+    const li = el('li', 'step');
+    li.style.animationDelay = (i * 45) + 'ms';
+
+    const gut = el('div', 'gutter');
+    const node_ = el(isLeaf && avail ? 'a' : 'button', 'node' + (done ? ' done' : '') + (!avail ? ' lock' : ''));
+    node_.style.setProperty('--o', OFFSETS[i % OFFSETS.length]);
+    node_.setAttribute('aria-label', child.label);
+    node_.textContent = done ? '✓' : (child.icon || tag.icon);
+    if (done) node_.style.fontWeight = '900';
+    if (isLeaf && avail && !done && !startShown && allLeaves) {
+      startShown = true;
+      node_.appendChild(el('span', 'ring'));
+      gut.appendChild(Object.assign(el('div', 'start', 'START'), {}));
+      gut.lastChild.style.setProperty('--o', OFFSETS[i % OFFSETS.length]);
+    }
+    gut.appendChild(node_);
+
+    const lab = el(isLeaf && avail ? 'a' : (isLeaf ? 'div' : 'button'), 'label' + (!avail ? ' lock' : ''));
+    const txt = el('div');
+    txt.appendChild(el('div', 'name', child.label));
+    if (isLeaf) {
+      const m = el('div', 'meta', tag.label);
+      if (done) { m.textContent = 'Opened · ' + tag.label; m.classList.add('tagdone'); }
+      txt.appendChild(m);
+    } else {
+      const c = child.children.length;
+      txt.appendChild(el('div', 'meta', c + (c === 1 ? ' item' : ' items')));
+    }
+    lab.appendChild(txt);
+    if (avail) lab.appendChild(el('span', 'go', isLeaf ? '↗' : '›'));
+
+    if (isLeaf && avail) {
+      [node_, lab].forEach(a => {
+        a.href = child.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.addEventListener('click', () => { markOpened(child.url); setTimeout(() => { renderProgress(); render(); }, 0); });
+      });
+    } else if (!isLeaf) {
+      node_.type = 'button'; lab.type = 'button';
+      [node_, lab].forEach(b => b.addEventListener('click', () => go(path.concat(i))));
+    }
+
+    li.appendChild(gut); li.appendChild(lab);
+    list.appendChild(li);
+  });
+
+  renderNav();
+  renderProgress();
+}
+
+function findPath(node, label, acc) {
+  const kids = node.children || [];
+  for (let i = 0; i < kids.length; i++) {
+    const c = kids[i];
+    if (c.label.replace(/^\d+\.\s*/, '') === label) return acc.concat(i);
+    if (c.type === 'branch') { const r = findPath(c, label, acc.concat(i)); if (r) return r; }
+  }
+  return null;
+}
+function findNode(label) { const p = findPath(DATA, label, []); return p ? { p, n: nodeAt(p) } : null; }
+(function wireRail() {
+  const rc = findNode('Report Card');
+  const btn = document.getElementById('rcBtn');
+  if (rc && rc.n.url) {
+    btn.href = rc.n.url;
+    btn.addEventListener('click', () => { markOpened(rc.n.url); renderProgress(); });
+  } else btn.style.display = 'none';
+  const rv = findNode('Review'), sim = findNode('Full Simulation');
+  const bR = document.getElementById('goReview'), bS = document.getElementById('goSim');
+  if (rv) bR.addEventListener('click', () => go(rv.p.slice(0, -1))); else bR.style.display = 'none';
+  if (sim) bS.addEventListener('click', () => go(sim.p)); else bS.style.display = 'none';
+})();
+
+document.getElementById('back').addEventListener('click', () => go(path.slice(0, -1)));
+window.addEventListener('hashchange', () => { path = readHash(); render(); });
+path = readHash();
+render();
+</script>
+</body>
+</html>
